@@ -2,12 +2,6 @@ name: Deploy
 
 on:
   workflow_call:
-    inputs:
-      app_dir:
-        required: false
-        type: string
-        default: /var/www/${{ github.event.repository.name }}
-
     secrets:
       VPS_HOST:
         required: true
@@ -17,6 +11,8 @@ on:
         required: true
       GHCR_PAT:
         required: true
+      APP_DIR:
+        required: false
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -80,7 +76,8 @@ jobs:
           script: |
             set -euo pipefail
 
-            APP_DIR="${{ inputs.app_dir }}"
+            APP_DIR="${{ secrets.APP_DIR || '' }}"
+            APP_DIR="${APP_DIR:-/var/www/${{ github.event.repository.name }}}"
 
             echo "📦 Checking directory..."
             if [ ! -d "$APP_DIR" ]; then
