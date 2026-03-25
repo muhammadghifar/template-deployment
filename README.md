@@ -8,13 +8,13 @@ It is designed to be **stack-agnostic** — as long as your project uses a `Dock
 
 # ✨ Features
 
-* 🔁 Reusable workflow (`workflow_call`)
-* 🐳 Build & push Docker image to GHCR
-* 🚀 Deploy to VPS via SSH
-* 🔒 Secure authentication (PAT for GHCR)
-* ⚡ Concurrency control (prevent overlapping deploys)
-* 🧪 Basic container health check
-* 🧹 Automatic Docker cleanup
+- 🔁 Reusable workflow (`workflow_call`)
+- 🐳 Build & push Docker image to GHCR
+- 🚀 Deploy to VPS via SSH
+- 🔒 Secure authentication (PAT for GHCR)
+- ⚡ Concurrency control (prevent overlapping deploys)
+- 🧪 Basic container health check
+- 🧹 Automatic Docker cleanup
 
 ---
 
@@ -24,8 +24,8 @@ It is designed to be **stack-agnostic** — as long as your project uses a `Dock
 
 Your project repository must include:
 
-* `Dockerfile` **or**
-* `docker-compose.yml` (recommended)
+- `Dockerfile` **or**
+- `docker-compose.yml` (recommended)
 
 ---
 
@@ -33,10 +33,10 @@ Your project repository must include:
 
 Make sure your VPS has:
 
-* Docker installed
-* Docker Compose installed
-* A prepared app directory (e.g. `/var/www/my-app`)
-* Proper permissions for the SSH user
+- Docker installed
+- Docker Compose installed
+- A prepared app directory (e.g. `/var/www/my-app`)
+- Proper permissions for the SSH user
 
 Example:
 
@@ -89,18 +89,26 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  packages: write # 👈 REQUIRED for pushing to GHCR
+
 jobs:
   deploy:
-    uses: muhammadghifar/template-deployment/.github/workflows/deploy.yml@v1    # adjust the version as needed as available
+    uses: muhammadghifar/template-deployment/.github/workflows/deploy.yml@v1 # adjust the version as needed as available
 
+    # If your project requires environment variables during build time (e.g. Next.js or Vite), you can pass them using `build_args`.
+    # for example
     with:
-      app_dir: /var/www/my-app   # optional, will use default value if not specified 
+      build_args: |
+        NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
     secrets:
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_USER: ${{ secrets.VPS_USER }}
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
       GHCR_PAT: ${{ secrets.GHCR_PAT }}
+      APP_DIR: ${{ secrets.APP_DIR }} # optional, will use default value if not specified
 ```
 
 ---
@@ -123,28 +131,49 @@ This will trigger:
 
 # ⚙️ Default Behavior
 
-* Image name:
+- Image name:
 
   ```
   ghcr.io/<username>/<repo-name>
   ```
 
-* Default app directory:
+* App directory resolution (priority):
+  1. `APP_DIR` secret
+  2. `/var/www/<repo-name>`
 
-  ```
-  /var/www/<repo-name>
-  ```
+---
+
+# 🔐 Authentication Overview
+
+This workflow uses two different authentication mechanisms:
+
+### 1. GitHub Actions (CI)
+
+Uses built-in `GITHUB_TOKEN`:
+
+- Used for building & pushing Docker images
+- Requires: `packages: write` permission
+
+> ⚠️ Important:
+> This workflow requires `packages: write` permission in your GitHub Actions workflow.
+> Without it, the build step will fail when pushing to GHCR.
+
+### 2. VPS (Deployment)
+
+Uses `GHCR_PAT`:
+
+- Used for `docker pull` on VPS
+- Requires: `read:packages` scope only
 
 ---
 
 # ⚠️ Notes
 
-* The template **does NOT create directories automatically**
-* Ensure your VPS directory exists before deploying
-* Deployment will fail if:
-
-  * directory is missing
-  * container fails to start
+- The template **does NOT create directories automatically**
+- Ensure your VPS directory exists before deploying
+- Deployment will fail if:
+  - directory is missing
+  - container fails to start
 
 ---
 
@@ -168,11 +197,11 @@ docker compose pull + up
 
 # 🚀 Future Improvements (Optional)
 
-* Rollback on failure
-* SHA-based deployment (instead of latest)
-* Multi-environment support (dev/staging/prod)
-* Healthcheck via HTTP endpoint
-* Multi-service detection
+- Rollback on failure
+- SHA-based deployment (instead of latest)
+- Multi-environment support (dev/staging/prod)
+- Healthcheck via HTTP endpoint
+- Multi-service detection
 
 ---
 
