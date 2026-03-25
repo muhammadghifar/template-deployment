@@ -6,7 +6,7 @@ on:
       app_dir:
         required: false
         type: string
-        default: /srv/apps/${{ github.event.repository.name }}
+        default: /var/www/${{ github.event.repository.name }}
 
     secrets:
       VPS_HOST:
