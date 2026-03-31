@@ -18,6 +18,8 @@ on:
         required: true
       APP_DIR:
         required: false
+      NEXT_PUBLIC_API_URL:
+        required: false
 
 concurrency:
   group: deploy-${{ github.ref }}
