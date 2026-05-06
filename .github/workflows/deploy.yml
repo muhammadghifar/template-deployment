@@ -84,7 +84,7 @@ jobs:
           script: |
             set -euo pipefail
 
-            APP_DIR="${{ secrets.APP_DIR || '' }}"
+            APP_DIR="${{ secrets.APP_DIR }}"
             APP_DIR="${APP_DIR:-/var/www/${{ github.event.repository.name }}}"
 
             echo "📦 Checking directory..."
